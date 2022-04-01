@@ -8,14 +8,15 @@
 #'
 #' \code{robyn_converge()} consumes \code{robyn_run()} outputs
 #' and calculate convergence status and builds convergence plots.
-#' Convergence is calculated by default using the following criteria:
+#' Convergence is calculated by default using the following criteria
+#' (having kept the default parameters: sd_qtref = 3 and med_lowb = 3):
 #' \describe{
 #'   \item{Criteria #1:}{Last quantile's standard deviation < first 3
 #'   quantiles' mean standard deviation}
 #'   \item{Criteria #2:}{Last quantile's median < first quantile's
 #'   median - 3 * first 3 quantiles' mean standard deviation.}
 #' }
-#' Both criteria have to be satisfied to consider convergence.
+#' Both mentioned criteria have to be satisfied to consider MOO convergence.
 #'
 #' @param OutputModels List. Output from \code{robyn_run()}.
 #' @param n_cuts Integer. Default to 20 (5\% cuts each).
@@ -64,9 +65,7 @@ robyn_converge <- function(OutputModels, n_cuts = 20, sd_qtref = 3, med_lowb = 3
       include.lowest = TRUE, ordered_result = TRUE, dig.lab = 6
     ))
 
-  # Calculate sd and median on each cut to alert user on:
-  # 1) last quantile's sd < mean sd of default first 3 qt
-  # 2) last quantile's median < median of first qt - default 3 * mean sd of defualt first 3 qt
+  # Calculate sd and median on each cut to alert user when no convergence
   errors <- dt_objfunc_cvg %>%
     group_by(.data$error_type, .data$cuts) %>%
     summarise(
@@ -174,7 +173,8 @@ robyn_converge <- function(OutputModels, n_cuts = 20, sd_qtref = 3, med_lowb = 3
     theme_lares()
 
   if (calibrated) {
-    moo_cloud_plot <- moo_cloud_plot + geom_point(data = df, aes(size = .data$mape, alpha = 1 - .data$mape))
+    moo_cloud_plot <- moo_cloud_plot + geom_point(data = df, aes(size = .data$mape, alpha = 1 - .data$mape)) +
+      guides(alpha = "none")
   } else {
     moo_cloud_plot <- moo_cloud_plot + geom_point()
   }
